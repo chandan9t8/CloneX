@@ -1,3 +1,6 @@
+# ChromaDB vector store
+brain_db/
+
 # Virtual environments
 .venv/
 venv/

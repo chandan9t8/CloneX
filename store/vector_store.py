@@ -14,7 +14,7 @@ def _chunk_id(chunk: Chunk) -> str:
     key = chunk.source + str(chunk.chunk_index)
     return hashlib.md5(key.encode()).hexdigest()
 
-
+# generate embeddings
 def _embed(client: OpenAI, texts: list[str]) -> list[list[float]]:
     embeddings = []
     for i in range(0, len(texts), BATCH_SIZE):
@@ -26,13 +26,14 @@ def _embed(client: OpenAI, texts: list[str]) -> list[list[float]]:
 
 class VectorStore:
     def __init__(self, db_path: str = "./brain_db", collection: str = "notes"):
-        self._chroma = chromadb.PersistentClient(path=db_path)
+        self._chroma = chromadb.PersistentClient(path=db_path)          # create chromadb instance
         self._col = self._chroma.get_or_create_collection(
             name=collection,
             metadata={"hnsw:space": "cosine"},
         )
         self._openai = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
+    # update/insert chunks into vector store
     def upsert(self, chunks: list[Chunk]) -> int:
         if not chunks:
             return 0
@@ -59,6 +60,7 @@ class VectorStore:
         )
         return len(chunks)
 
+    # search vector store
     def search(self, query: str, top_k: int = 5) -> list[dict]:
         query_embedding = _embed(self._openai, [query])[0]
         results = self._col.query(

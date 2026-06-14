@@ -12,6 +12,8 @@ sync.py  →  load → chunk → embed → store in ChromaDB (brain_db/)
         │
         ▼
 cli.py ask "..."  →  retrieve top-k chunks → GPT synthesizes answer
+                          │
+                          └─ no vault results? → DuckDuckGo web search (via smolagents + Qwen2.5)
 ```
 
 ## Setup
@@ -27,7 +29,10 @@ Create a `.env` file:
 ```
 OPENAI_API_KEY=sk-...
 VAULT_PATH=/path/to/your/obsidian/vault
+HF_TOKEN=hf_...
 ```
+
+`HF_TOKEN` is a [HuggingFace access token](https://huggingface.co/settings/tokens) — required for the web search fallback.
 
 ## Usage
 
@@ -63,6 +68,8 @@ store/
   vector_store.py # ChromaDB wrapper — upsert and search
 brain/
   query.py        # retrieves chunks, calls GPT for a synthesized answer
+agents/
+  agent.py        # smolagents ToolCallingAgent with DuckDuckGo web search fallback
 sync.py           # ingestion entry point
 cli.py            # query entry point
 ```

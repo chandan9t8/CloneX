@@ -29,8 +29,7 @@ def ask(question: str, db_path: str = "./brain_db", top_k: int = TOP_K) -> dict:
     """
     store = VectorStore(db_path=db_path)
     hits = store.search(question, top_k=top_k)
-
-    if not hits:
+    if not hits or hits[0]["score"] < 0.5:
         return {"answer": "No relevant notes found.", "sources": []}
 
     context = _build_context(hits)

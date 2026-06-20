@@ -1,10 +1,11 @@
 import os
 
-from openai import OpenAI
+from huggingface_hub import InferenceClient
+from langfuse import observe
 
 from store.vector_store import VectorStore
 
-CHAT_MODEL = "gpt-4o-mini"
+CHAT_MODEL = "Qwen/Qwen2.5-72B-Instruct"
 TOP_K = 5
 
 _SYSTEM_PROMPT = """\
@@ -22,6 +23,7 @@ def _build_context(hits: list[dict]) -> str:
     return "\n\n".join(parts)
 
 
+@observe()
 def ask(question: str, db_path: str = "./brain_db", top_k: int = TOP_K) -> dict:
     """
     Returns {"answer": str, "sources": list[dict]}
@@ -29,14 +31,14 @@ def ask(question: str, db_path: str = "./brain_db", top_k: int = TOP_K) -> dict:
     """
     store = VectorStore(db_path=db_path)
     hits = store.search(question, top_k=top_k)
+
     if not hits or hits[0]["score"] < 0.5:
         return {"answer": "No relevant notes found.", "sources": []}
 
     context = _build_context(hits)
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    client = InferenceClient(model=CHAT_MODEL, token=os.environ["HF_TOKEN"])
 
-    response = client.chat.completions.create(
-        model=CHAT_MODEL,
+    response = client.chat_completion(
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
             {

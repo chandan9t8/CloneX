@@ -1,7 +1,9 @@
 import os
+from langfuse import observe
 from smolagents import DuckDuckGoSearchTool, InferenceClientModel, ToolCallingAgent
 
 
+@observe()
 def run_web_only(question: str) -> str:
     model = InferenceClientModel(
         model_id="Qwen/Qwen2.5-72B-Instruct",

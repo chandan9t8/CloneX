@@ -7,6 +7,13 @@ from dotenv import load_dotenv
 def main():
     load_dotenv()
 
+    from langfuse import get_client
+    langfuse = get_client()
+    if langfuse.auth_check():
+        print("Langfuse client is authenticated and ready!")
+    else:
+        print("Authentication failed. Please check your credentials and host.")
+
     # validating the input
     if len(sys.argv) < 3 or sys.argv[1] != "ask":
         print('Usage: python cli.py ask "<question>"', file=sys.stderr)
